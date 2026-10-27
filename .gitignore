@@ -19,6 +19,20 @@ dist-ssr
 # Wrangler / Cloudflare
 .wrangler/
 .dev.vars
+.dev.vars.*
+!.dev.vars.example
+
+# Local environment overrides (never commit secrets)
+.env.local
+.env.*.local
+.env.staging
+!.env.example
+
+# Local Supabase / Cloudflare credentials
+.supabase-token
+.supabase-password
+.cloudflare-token
+supabase/.temp/
 
 # Editor directories and files
 .vscode/*

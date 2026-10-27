@@ -176,7 +176,10 @@ function Enquiries() {
 
   async function toggle(id: string, handled: boolean) {
     const { error } = await supabase.from("enquiries").update({ handled }).eq("id", id);
-    if (error) return toast.error(error.message);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     qc.invalidateQueries({ queryKey: ["admin", "enquiries"] });
   }
 
@@ -189,10 +192,7 @@ function Enquiries() {
       {q.data.map((e) => (
         <li
           key={e.id}
-          className={cn(
-            "rounded-sm border border-border bg-card p-5",
-            e.handled && "opacity-60",
-          )}
+          className={cn("rounded-sm border border-border bg-card p-5", e.handled && "opacity-60")}
         >
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -244,7 +244,10 @@ function ContentManager({ table }: { table: TableName }) {
   async function remove(row: Row) {
     if (!confirm(`Delete "${String(row[cfg.titleKey])}"? This can't be undone.`)) return;
     const { error } = await supabase.from(table).delete().eq("id", row.id!);
-    if (error) return toast.error(error.message);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     toast.success("Deleted");
     qc.invalidateQueries({ queryKey: ["admin", table] });
   }
@@ -338,7 +341,15 @@ async function uploadImage(table: TableName, file: File) {
   return path;
 }
 
-function Editor({ table, initial, onDone }: { table: TableName; initial: Row; onDone: () => void }) {
+function Editor({
+  table,
+  initial,
+  onDone,
+}: {
+  table: TableName;
+  initial: Row;
+  onDone: () => void;
+}) {
   const cfg = CONFIG[table];
   const [row, setRow] = useState<Row>(initial);
   const [saving, setSaving] = useState(false);
@@ -369,15 +380,24 @@ function Editor({ table, initial, onDone }: { table: TableName; initial: Row; on
     delete payload["created_at"];
     delete payload["updated_at"];
     const title = String(payload[cfg.titleKey] ?? "").trim();
-    if (!title) return toast.error("Please add a title or name.");
+    if (!title) {
+      toast.error("Please add a title or name.");
+      return;
+    }
     payload["slug"] = slugify(String(payload["slug"] || title));
     setSaving(true);
     const query = row.id
-      ? supabase.from(table).update(payload as never).eq("id", row.id)
+      ? supabase
+          .from(table)
+          .update(payload as never)
+          .eq("id", row.id)
       : supabase.from(table).insert(payload as never);
     const { error } = await query;
     setSaving(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     toast.success("Saved — it's live on the site.");
     onDone();
   }
@@ -385,7 +405,9 @@ function Editor({ table, initial, onDone }: { table: TableName; initial: Row; on
   return (
     <form onSubmit={save} className="space-y-6 rounded-sm border border-border bg-card p-6 sm:p-8">
       <h2 className="text-xl text-foreground">
-        {row.id ? `Edit ${String(initial[cfg.titleKey])}` : `New ${cfg.label.slice(0, -1).toLowerCase()}`}
+        {row.id
+          ? `Edit ${String(initial[cfg.titleKey])}`
+          : `New ${cfg.label.slice(0, -1).toLowerCase()}`}
       </h2>
       {cfg.fields.map((field) => {
         const value = row[field.key];
@@ -419,7 +441,14 @@ function Editor({ table, initial, onDone }: { table: TableName; initial: Row; on
                   type="number"
                   value={value === null || value === undefined ? "" : String(value)}
                   onChange={(e) =>
-                    set(field.key, e.target.value === "" ? (field.key === "price" ? null : 0) : Number(e.target.value))
+                    set(
+                      field.key,
+                      e.target.value === ""
+                        ? field.key === "price"
+                          ? null
+                          : 0
+                        : Number(e.target.value),
+                    )
                   }
                 />
               </div>
@@ -427,7 +456,11 @@ function Editor({ table, initial, onDone }: { table: TableName; initial: Row; on
           case "image":
           case "gallery": {
             const list =
-              field.type === "gallery" ? ((value as string[]) ?? []) : value ? [value as string] : [];
+              field.type === "gallery"
+                ? ((value as string[]) ?? [])
+                : value
+                  ? [value as string]
+                  : [];
             return (
               <div key={field.key} className="space-y-2">
                 <Label>{field.label}</Label>

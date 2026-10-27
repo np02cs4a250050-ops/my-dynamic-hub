@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { CheckCircle2 } from "lucide-react";
 import { submitEnquiry } from "@/lib/content.functions";
 import { PageHero, Section } from "@/components/site/Bits";
+import { Turnstile } from "@/components/site/Turnstile";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -46,6 +47,9 @@ function Contact() {
   const send = useServerFn(submitEnquiry);
   const [submitting, setSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const [formAttempt, setFormAttempt] = useState(0);
+  const turnstileEnabled = Boolean(import.meta.env["VITE_TURNSTILE_SITE_KEY"]);
 
   const presetInterest =
     initialInterest && !INTERESTS.includes(initialInterest)
@@ -68,12 +72,25 @@ function Contact() {
           phone: String(fd.get("phone") ?? ""),
           interest: String(fd.get("interest") ?? "General"),
           message: String(fd.get("message") ?? ""),
+          website: String(fd.get("website") ?? ""),
+          turnstileToken,
         },
       });
       form.reset();
       setSent(true);
-    } catch {
-      toast.error("Please check your details — name, a valid email and a short message are needed.");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "";
+      if (message.includes("rate_limited")) {
+        toast.error("You've sent several enquiries recently. Please try again in an hour.");
+      } else if (message.includes("captcha_failed")) {
+        toast.error("Please complete the verification and try again.");
+      } else {
+        toast.error(
+          "Please check your details — name, a valid email and a short message are needed.",
+        );
+      }
+      setTurnstileToken("");
+      setFormAttempt((attempt) => attempt + 1);
     } finally {
       setSubmitting(false);
     }
@@ -173,9 +190,17 @@ function Contact() {
                   placeholder="Tell us about the space, the piece, sizes, colours or timeline…"
                 />
               </div>
+              <div
+                aria-hidden="true"
+                className="absolute -left-[9999px] top-auto h-px w-px overflow-hidden"
+              >
+                <Label htmlFor="website">Website</Label>
+                <Input id="website" name="website" tabIndex={-1} autoComplete="off" />
+              </div>
+              <Turnstile key={formAttempt} onToken={setTurnstileToken} />
               <button
                 type="submit"
-                disabled={submitting}
+                disabled={submitting || (turnstileEnabled && !turnstileToken)}
                 className="inline-flex items-center justify-center rounded-sm bg-primary px-7 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
               >
                 {submitting ? "Sending…" : "Send enquiry"}

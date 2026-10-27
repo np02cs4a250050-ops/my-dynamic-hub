@@ -46,7 +46,10 @@ function Services() {
       <Section>
         <ul className="divide-y divide-border border-y border-border">
           {services.map((service, index) => (
-            <li key={service.id} className="grid gap-6 py-10 md:grid-cols-[auto_1fr_auto] md:gap-10">
+            <li
+              key={service.id}
+              className="grid gap-6 py-10 md:grid-cols-[auto_1fr_auto] md:gap-10"
+            >
               <span className="font-display text-2xl text-accent md:pt-1">
                 {String(index + 1).padStart(2, "0")}
               </span>

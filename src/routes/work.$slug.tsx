@@ -29,7 +29,10 @@ export const Route = createFileRoute("/work/$slug")({
     ];
     const cover = project.cover_image_url;
     if (cover && /^https:\/\//.test(cover)) {
-      meta.push({ property: "og:image", content: cover }, { name: "twitter:image", content: cover });
+      meta.push(
+        { property: "og:image", content: cover },
+        { name: "twitter:image", content: cover },
+      );
     }
     return { meta };
   },

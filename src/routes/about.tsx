@@ -53,9 +53,10 @@ function About() {
               projects, often as commissions for other people's.
             </p>
             <p>
-              Inspired by the principle of <strong className="text-foreground">Reuse &amp; Recreation</strong>,
-              we look for the meaningful second life in materials, and create opportunities for
-              local artisans, women entrepreneurs and home-based workers along the way.
+              Inspired by the principle of{" "}
+              <strong className="text-foreground">Reuse &amp; Recreation</strong>, we look for the
+              meaningful second life in materials, and create opportunities for local artisans,
+              women entrepreneurs and home-based workers along the way.
             </p>
           </div>
           <div className="space-y-5">

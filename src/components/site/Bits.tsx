@@ -88,12 +88,13 @@ export function PageHero({
   );
 }
 
-export function RouteError({ error }: { error: Error }) {
+export function RouteError({ error }: { error: unknown }) {
+  const message = error instanceof Error ? error.message : "";
   return (
     <div className="mx-auto max-w-2xl px-5 py-28 text-center">
       <h1 className="text-2xl text-foreground">This page didn't load</h1>
       <p className="mt-3 text-sm text-muted-foreground">
-        {error.message || "Something went wrong while loading this page. Please try again."}
+        {message || "Something went wrong while loading this page. Please try again."}
       </p>
       <div className="mt-8">
         <ButtonLink to="/">Back home</ButtonLink>
